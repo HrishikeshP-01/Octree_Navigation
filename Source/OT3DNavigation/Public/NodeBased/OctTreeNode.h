@@ -20,6 +20,7 @@ struct FOctTreeNode
 	bool isLeaf;
 	int8 level; // Instead of storing size int we can store the much smaller level data type & calculate size from that later
 	FVector center;
+	bool isOccupied;
 
 	FOctTreeNode()
 	{
@@ -27,6 +28,7 @@ struct FOctTreeNode
 		isLeaf = true;
 		level = 0;
 		center = FVector::ZeroVector;
+		isOccupied = false;
 	}
 	FOctTreeNode(FOctTreeNode* p, int8 l, FVector c)
 	{
@@ -34,6 +36,7 @@ struct FOctTreeNode
 		isLeaf = true;
 		level = l;
 		center = c;
+		isOccupied = false;
 	}
 
 	/**

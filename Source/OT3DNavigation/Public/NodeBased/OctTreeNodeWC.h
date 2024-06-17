@@ -30,6 +30,7 @@ struct FOctTreeNodeWC : public FOctTreeNode
 		isLeaf = false;
 		level = 0;
 		center = FVector::ZeroVector;
+		isOccupied = true;
 	}
 	FOctTreeNodeWC(FOctTreeNode* p, int8 l, FVector c)
 	{
@@ -37,6 +38,7 @@ struct FOctTreeNodeWC : public FOctTreeNode
 		isLeaf = false;
 		level = l;
 		center = c;
+		isOccupied = true;
 	}
 
 	/**
