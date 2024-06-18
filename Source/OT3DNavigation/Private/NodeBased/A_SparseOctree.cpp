@@ -35,8 +35,11 @@ void AA_SparseOctree::SetVariables(int n_1, int m_1, float nodeSize_1, float max
 	levelCount = n - m;
 	maxSide = maxSide_1;
 	minSide = (minSide_1 >= 1) ? minSide_1 : 1.0f;
+	
 	nodeCount = 0;
 	nodes.Empty();
+	graphNodeCount = 0;
+	graphNodes.Empty();
 
 	ignoreActors.Init(this, 1);
 	//colors.Init(FColor::Red, 1);
@@ -48,7 +51,6 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 
 	TArray<AActor*> outActors;
 	bool isOccupied = UKismetSystemLibrary::BoxOverlapActors(GetWorld(), center, FVector(currSide), traceObjectTypes, AActor::StaticClass(), ignoreActors, outActors);
-	DrawDebugBox(GetWorld(), center, FVector(currSide), FColor::Red, true);
 
 	// If min side reached or the node is un-occupied, node is leaf node
 	if (currSide <= minSide)
@@ -115,11 +117,70 @@ void AA_SparseOctree::VisualizeOccupancy()
 
 void AA_SparseOctree::GenerateGraph()
 {
+	CreateGraphNodes();
+	CreateGraphEdges();
+}
+
+void AA_SparseOctree::CreateGraphNodes()
+{
 	for (int i = 0;i < nodeCount;i++)
 	{
 		if (!nodes[i].isLeaf || nodes[i].isOccupied) { continue; }
 		graphNodeCount++;
-		graphNodes.Add(FGraphNode(nodes[i].center));
-		//if(int j=0;j<nodeCount;j++)
+		graphNodes.Add(FGraphNode(nodes[i].center, nodes[i].level));
+	}
+}
+
+void AA_SparseOctree::CreateGraphEdges()
+{
+	float distanceThreshold, side_i, side_j;
+	for (int i = 0;i < graphNodeCount;i++)
+	{
+		FGraphNode& current = graphNodes[i];
+		side_i = maxSide / FMath::Pow(2, (double)current.level);
+		for (int j = 0;j < graphNodeCount;j++)
+		{
+			if (i == j) { continue; }
+			side_j = maxSide / FMath::Pow(2, (double)graphNodes[j].level);
+			distanceThreshold = side_i + side_j;
+			if (UNavMath::GetManhattanDistance(current.center, graphNodes[j].center) <= distanceThreshold)
+			{
+				current.neighbors.Add(&graphNodes[j]);
+			}
+		}
+	}
+}
+
+void AA_SparseOctree::VisualizeGraph()
+{
+	UWorld* world = GetWorld();
+	for (int i = 0;i < graphNodeCount;i++)
+	{
+		if (VisualizeGraphAsBoxes)
+		{
+			float side = maxSide / FMath::Pow(2, (double)graphNodes[i].level);
+			UDebugOctree::DrawOctNode(world, graphNodes[i].center, side, FColor::Green);
+		}
+		//else
+		{
+			// Costly
+			UDebugOctree::DrawPoint(world, graphNodes[i].center, 10.0f, FColor::Green);
+		}
+	}
+}
+
+void AA_SparseOctree::VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node)
+{
+	UWorld* world = GetWorld();
+	float side = maxSide / FMath::Pow(2, (double)node.level);
+	UE_LOG(LogTemp, Warning, TEXT("Node Center: %s"), *node.center.ToString());
+	UDebugOctree::DrawOctNode(world, node.center, side, FColor::Red);
+	for(int i=0;i<node.neighbors.Num();i++)
+	{
+		side = maxSide / FMath::Pow(2, (double)node.neighbors[i]->level);
+		UE_LOG(LogTemp, Warning, TEXT("Neighbor Center: %s"), *node.neighbors[i]->center.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Manhattan: %f"), UNavMath::GetManhattanDistance(node.center, node.neighbors[i]->center));
+		UE_LOG(LogTemp, Warning, TEXT("side: %f"), side);
+		UDebugOctree::DrawOctNode(world, node.neighbors[i]->center, side, FColor::Blue);
 	}
 }

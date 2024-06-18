@@ -21,4 +21,6 @@ public:
 public:
 	UFUNCTION()
 	static void DrawOctNode(UWorld* world, FVector& center, float side, FColor color);
+	UFUNCTION()
+		static void DrawPoint(UWorld* world, FVector& center, float radius, FColor color);
 };

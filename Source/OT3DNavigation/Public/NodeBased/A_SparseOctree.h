@@ -9,6 +9,7 @@
 #include "Debug/DebugOctree.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GraphNode.h"
+#include "NavHelpers/NavMath.h"
 #include "A_SparseOctree.generated.h"
 
 UCLASS()
@@ -54,6 +55,8 @@ protected:
 		TArray<FColor> colors;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Debug")
 		bool DrawUnoccupiedOctNodes = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graph|Debug")
+		bool VisualizeGraphAsBoxes = true;
 
 	// Functions for octree
 	UFUNCTION(BlueprintCallable)
@@ -72,4 +75,10 @@ protected:
 		int graphNodeCount = -1;
 	UFUNCTION(BlueprintCallable)
 		void GenerateGraph();
+	void CreateGraphNodes();
+	void CreateGraphEdges();
+	UFUNCTION(BlueprintCallable)
+		void VisualizeGraph();
+	UFUNCTION(BlueprintCallable)
+		void VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node);
 };

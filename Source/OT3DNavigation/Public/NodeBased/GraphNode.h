@@ -13,14 +13,17 @@ struct FGraphNode
 	GENERATED_BODY()
 
 	FVector center;
+	int level;
 	TArray<FGraphNode*> neighbors;
 
 	FGraphNode()
 	{
 		center = FVector::ZeroVector;
+		level = 0;
 	}
-	FGraphNode(FVector c)
+	FGraphNode(FVector c, int l)
 	{
 		center = c;
+		level = l;
 	}
 };
