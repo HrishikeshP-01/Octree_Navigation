@@ -141,7 +141,8 @@ void AA_SparseOctree::CreateGraphEdges()
 		{
 			if (i == j) { continue; }
 			side_j = maxSide / FMath::Pow(2, (double)graphNodes[j].level);
-			distanceThreshold = side_i + side_j;
+			if (side_i == side_j) { distanceThreshold = side_i; }
+			else { distanceThreshold = ((side_i > side_j) ? side_i : side_j) + ((side_i < side_j) ? side_i : side_j) / 2; }
 			if (UNavMath::GetManhattanDistance(current.center, graphNodes[j].center) <= distanceThreshold)
 			{
 				current.neighbors.Add(&graphNodes[j]);
