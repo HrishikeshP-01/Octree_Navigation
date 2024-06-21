@@ -81,4 +81,6 @@ protected:
 		void VisualizeGraph();
 	UFUNCTION(BlueprintCallable)
 		void VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node);
+	UFUNCTION(BlueprintCallable)
+		void VisualizeEdges();
 };

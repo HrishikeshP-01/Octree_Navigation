@@ -14,7 +14,7 @@ UDebugOctree::~UDebugOctree()
 
 void UDebugOctree::DrawOctNode(UWorld* world, FVector& center, float side, FColor color)
 {
-	DrawDebugBox(world, center, FVector(side, side, side), color, true);
+	DrawDebugBox(world, center, FVector(side, side, side)/2, color, true);
 }
 
 void UDebugOctree::DrawPoint(UWorld* world, FVector& center, float radius, FColor color)

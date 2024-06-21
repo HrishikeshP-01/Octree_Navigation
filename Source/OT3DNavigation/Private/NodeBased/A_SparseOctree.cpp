@@ -50,23 +50,23 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 	nodeCount++;
 
 	TArray<AActor*> outActors;
-	bool isOccupied = UKismetSystemLibrary::BoxOverlapActors(GetWorld(), center, FVector(currSide), traceObjectTypes, AActor::StaticClass(), ignoreActors, outActors);
-
+	bool isOccupied = UKismetSystemLibrary::BoxOverlapActors(GetWorld(), center, FVector(currSide/2), traceObjectTypes, AActor::StaticClass(), ignoreActors, outActors);
 	// If min side reached or the node is un-occupied, node is leaf node
 	if (currSide <= minSide)
 	{
 		nodes.Add(FOctTreeNode(&parent, (int8)level, center));
-		if (isOccupied) { nodes[nodeCount - 1].isOccupied = true; }
+		nodes[nodeCount - 1].isOccupied = isOccupied;
 		return nodes[nodeCount - 1];
 	}
 	
 	if (!isOccupied)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not Occupied"));
+		UE_LOG(LogTemp, Warning, TEXT("Unoccupied: %s"), *center.ToString());
 		nodes.Add(FOctTreeNode(&parent, (int8)level, center));
 		return nodes[nodeCount - 1];
 	}
-	
+
+	UE_LOG(LogTemp, Warning, TEXT("Occupied: %s"), *center.ToString());
 	// Else sub-divide the cell & try again
 	nodes.Add(FOctTreeNodeWC(&parent, (int8)level, center));
 
@@ -74,14 +74,14 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 	int newLevel = level + 1;
 
 	// Set Children
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount-1],newSide,center+ FVector(currSide / 2, currSide / 2, currSide / 2), newLevel),0); // 000
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(currSide / 2, currSide / 2, -currSide / 2), newLevel), 1); // 001
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(currSide / 2, -currSide / 2, currSide / 2), newLevel), 2); // 010
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(currSide / 2, -currSide / 2, -currSide / 2), newLevel), 3); // 011
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-currSide / 2, currSide / 2, currSide / 2), newLevel), 4); // 100
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-currSide / 2, currSide / 2, -currSide / 2), newLevel), 5); // 101
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-currSide / 2, -currSide / 2, currSide / 2), newLevel), 6); // 110
-	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-currSide / 2, -currSide / 2, -currSide / 2), newLevel), 7); // 111
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount-1],newSide,center+ FVector(newSide, newSide, newSide)/2, newLevel),0); // 000
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(newSide, newSide, -newSide)/2, newLevel), 1); // 001
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(newSide, -newSide, newSide)/2, newLevel), 2); // 010
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(newSide, -newSide, -newSide)/2, newLevel), 3); // 011
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-newSide, newSide, newSide)/2, newLevel), 4); // 100
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-newSide, newSide, -newSide)/2, newLevel), 5); // 101
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-newSide, -newSide, newSide)/2, newLevel), 6); // 110
+	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(-newSide, -newSide, -newSide)/2, newLevel), 7); // 111
 
 	return nodes[nodeCount - 1];
 }
@@ -93,7 +93,6 @@ void AA_SparseOctree::VisualizeTree()
 	{
 		int colorNum = (nodes[i].level < colors.Num() - 1) ? nodes[i].level : 0;
 		float side = maxSide / FMath::Pow(2, (double)nodes[i].level);
-		UE_LOG(LogTemp, Warning, TEXT("Center: %s"), *nodes[i].center.ToString());
 		UDebugOctree::DrawOctNode(world, nodes[i].center, side, colors[colorNum]);
 	}
 }
@@ -182,5 +181,21 @@ void AA_SparseOctree::VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node)
 		UE_LOG(LogTemp, Warning, TEXT("Manhattan: %f"), UNavMath::GetManhattanDistance(node.center, node.neighbors[i]->center));
 		UE_LOG(LogTemp, Warning, TEXT("side: %f"), side);
 		UDebugOctree::DrawOctNode(world, node.neighbors[i]->center, side, FColor::Blue);
+	}
+}
+
+void AA_SparseOctree::VisualizeEdges()
+{
+	UWorld* world = GetWorld();
+	TArray<FVector> verts;
+	for (int i = 0;i < graphNodeCount;i++)
+	{
+		float side = maxSide / FMath::Pow(2, (double)graphNodes[i].level);
+		UNavMath::GetVertices(graphNodes[i].center, side, verts);
+		for (int j = 0;j < 8;j++)
+		{
+			UDebugOctree::DrawPoint(world, verts[j], 10.f, FColor::Cyan);
+		}
+		verts.Empty();
 	}
 }

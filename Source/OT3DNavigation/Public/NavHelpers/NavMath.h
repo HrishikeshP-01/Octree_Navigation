@@ -18,5 +18,7 @@ public:
 
 public:
 	UFUNCTION()
-	static float GetManhattanDistance(FVector& a, FVector& b);
+		static float GetManhattanDistance(FVector& a, FVector& b);
+	UFUNCTION()
+		static void GetVertices(FVector& center, float side, TArray<FVector>& vert);
 };
