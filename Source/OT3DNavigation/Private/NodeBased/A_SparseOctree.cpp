@@ -132,7 +132,7 @@ void AA_SparseOctree::CreateGraphNodes()
 
 void AA_SparseOctree::CreateGraphEdges()
 {
-	float distanceThreshold, side_i, side_j;
+	float distanceThreshold, side_i, side_j, diff_X, diff_Y, diff_Z;
 	for (int i = 0;i < graphNodeCount;i++)
 	{
 		FGraphNode& current = graphNodes[i];
@@ -141,9 +141,13 @@ void AA_SparseOctree::CreateGraphEdges()
 		{
 			if (i == j) { continue; }
 			side_j = maxSide / FMath::Pow(2, (double)graphNodes[j].level);
-			if (side_i == side_j) { distanceThreshold = side_i; }
-			else { distanceThreshold = ((side_i > side_j) ? side_i : side_j) + ((side_i < side_j) ? side_i : side_j) / 2; }
-			if (UNavMath::GetManhattanDistance(current.center, graphNodes[j].center) <= distanceThreshold)
+			distanceThreshold = (side_i > side_j) ? side_i / 2 : side_j / 2;
+			diff_X = FMath::Abs(current.center.X - graphNodes[j].center.X);
+			diff_Y = FMath::Abs(current.center.Y - graphNodes[j].center.Y);
+			diff_Z = FMath::Abs(current.center.Z - graphNodes[j].center.Z);
+			if ((diff_X == (side_i + side_j) / 2 && diff_Y < distanceThreshold && diff_Z < distanceThreshold) ||
+				(diff_Y == (side_i + side_j) / 2 && diff_X < distanceThreshold && diff_Z < distanceThreshold) ||
+				(diff_Z == (side_i + side_j) / 2 && diff_X < distanceThreshold && diff_Y < distanceThreshold))
 			{
 				current.neighbors.Add(&graphNodes[j]);
 			}
