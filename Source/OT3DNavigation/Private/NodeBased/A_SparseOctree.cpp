@@ -43,6 +43,8 @@ void AA_SparseOctree::SetVariables(int n_1, int m_1, float nodeSize_1, float max
 
 	ignoreActors.Init(this, 1);
 	//colors.Init(FColor::Red, 1);
+
+	aStarPath.Empty();
 }
 
 FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSide, FVector center, int level)
@@ -202,5 +204,19 @@ void AA_SparseOctree::VisualizeEdges()
 			UDebugOctree::DrawPoint(world, verts[j], 10.f, FColor::Cyan);
 		}
 		verts.Empty();
+	}
+}
+
+void AA_SparseOctree::FindPathBetweenNodes(UPARAM(ref) FGraphNode& startNode, UPARAM(ref) FGraphNode& endNode)
+{
+	aStarPath = UAStar::GetPath(graphNodes, startNode, endNode, doesPathExist);
+}
+
+void AA_SparseOctree::VisualizePath()
+{
+	UWorld* world = GetWorld();
+	for (int i = 0;i < aStarPath.Num() - 1;i++)
+	{
+		UDebugOctree::DrawLine(world, aStarPath[i], aStarPath[i + 1], FColor::Black);
 	}
 }

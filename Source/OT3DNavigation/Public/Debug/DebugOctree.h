@@ -23,4 +23,6 @@ public:
 	static void DrawOctNode(UWorld* world, FVector& center, float side, FColor color);
 	UFUNCTION()
 		static void DrawPoint(UWorld* world, FVector& center, float radius, FColor color);
+	UFUNCTION()
+		static void DrawLine(UWorld* world, FVector& start, FVector& end, FColor color);
 };

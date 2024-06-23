@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GraphNode.h"
 #include "NavHelpers/NavMath.h"
+#include "NavMath/AStar.h"
 #include "A_SparseOctree.generated.h"
 
 UCLASS()
@@ -57,6 +58,10 @@ protected:
 		bool DrawUnoccupiedOctNodes = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graph|Debug")
 		bool VisualizeGraphAsBoxes = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AStar")
+		TArray<FVector> aStarPath;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AStar")
+		bool doesPathExist;
 
 	// Functions for octree
 	UFUNCTION(BlueprintCallable)
@@ -83,4 +88,9 @@ protected:
 		void VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node);
 	UFUNCTION(BlueprintCallable)
 		void VisualizeEdges();
+
+	UFUNCTION(BlueprintCallable)
+		void FindPathBetweenNodes(UPARAM(ref) FGraphNode& start, UPARAM(ref) FGraphNode& end);
+	UFUNCTION(BlueprintCallable)
+		void VisualizePath();
 };

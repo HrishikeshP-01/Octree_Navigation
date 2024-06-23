@@ -21,3 +21,8 @@ void UDebugOctree::DrawPoint(UWorld* world, FVector& center, float radius, FColo
 {
 	DrawDebugSphere(world, center, radius, 8, color, true);
 }
+
+void UDebugOctree::DrawLine(UWorld* world, FVector& start, FVector& end, FColor color)
+{
+	DrawDebugLine(world, start, end, color, true);
+}
