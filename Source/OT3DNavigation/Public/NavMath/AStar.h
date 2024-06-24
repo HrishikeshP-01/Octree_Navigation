@@ -8,7 +8,9 @@
 #include "AStar.generated.h"
 
 /**
- * 
+ * Description: Class with functions related to A* navigation for node-based implementation of octrees
+ * Purpose: Find the shortest path using A* for node-based implementation of octrees
+ * Concerns: Performance can be improved using heaps, multi-threading etc.
  */
 UCLASS()
 class OT3DNAVIGATION_API UAStar : public UObject

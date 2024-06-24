@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+ * Description: Class that implements math-based functionality useful for solving problems related to navigation
+ * Purpose: General function useful for solving problems related to navigation
+ * Concerns:
+ */
 
 #include "NavHelpers/NavMath.h"
 

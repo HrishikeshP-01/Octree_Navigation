@@ -1,5 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/**
+* Description: Class for implementation of sparse octree
+* Purpose: Implementation of sparse-octree & finding the best path between 2 points
+* Improvements: Optimization. We can use sets or dicts instead of arrays & reduce time complexity
+* You can delete octree nodes after creating the graph. I'm keeping it for debugging & visualization
+*/
 
 #include "NodeBased/A_SparseOctree.h"
 #include "DrawDebugHelpers.h"
@@ -26,6 +31,10 @@ void AA_SparseOctree::Tick(float DeltaTime)
 
 }
 
+/**
+* Purpose: Every time the octree is created we need to reset node counts & empty the node arrays 
+* Else data just keeps getting added as we use arr.Add() functions later
+*/
 void AA_SparseOctree::SetVariables(int n_1, int m_1, float nodeSize_1, float maxSide_1, float minSide_1)
 {
 	n = n_1;
@@ -47,6 +56,18 @@ void AA_SparseOctree::SetVariables(int n_1, int m_1, float nodeSize_1, float max
 	aStarPath.Empty();
 }
 
+/**
+* Purpose: Function to generate a sparse octree
+* Logic: 
+* 1. Increment nodeCount
+* 2. Check if the particular region is occupied 
+* 3. If yes then that is a leaf node, create a leaf node & enter it into the array -> Exit
+* 4. If the currSide <= minSide we can't subdivide any further so this is a leaf node, create a leaf node & enter it into the array -> Exit
+* 5. If it's not a leaf node, create a non-leaf node & enter it into the array
+* 6. Call the same function for positions equal to the center of a cube subdivided into 8 smaller cubes
+* 7. Exit
+* Improvements: Optimization - use dictionary to store center(key) & necessary info(value) this will make retrival very time-efficient 
+*/
 FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSide, FVector center, int level)
 {
 	nodeCount++;
@@ -61,6 +82,7 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 		return nodes[nodeCount - 1];
 	}
 	
+	// If it's not occupied, no need to subdivide, this is a leaf node
 	if (!isOccupied)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Unoccupied: %s"), *center.ToString());
@@ -75,7 +97,7 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 	float newSide = currSide / 2;
 	int newLevel = level + 1;
 
-	// Set Children
+	// Call the same function to create the children & set them as the neighbors of the current node
 	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount-1],newSide,center+ FVector(newSide, newSide, newSide)/2, newLevel),0); // 000
 	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(newSide, newSide, -newSide)/2, newLevel), 1); // 001
 	nodes[nodeCount - 1].SetChild(&GenerateOctree(nodes[nodeCount - 1], newSide, center + FVector(newSide, -newSide, newSide)/2, newLevel), 2); // 010
@@ -88,6 +110,7 @@ FOctTreeNode& AA_SparseOctree::GenerateOctree(FOctTreeNode& parent, float currSi
 	return nodes[nodeCount - 1];
 }
 
+// Purpose: Debug function to visualize the sparse octree
 void AA_SparseOctree::VisualizeTree()
 {
 	UWorld* world = GetWorld();
@@ -99,6 +122,7 @@ void AA_SparseOctree::VisualizeTree()
 	}
 }
 
+// Purpose: Debug function to see which nodes are occupied or which nodes are unoccupied depending on DrawUnoccupiedOctNodes variable
 void AA_SparseOctree::VisualizeOccupancy()
 {
 	UWorld* world = GetWorld();
@@ -116,12 +140,19 @@ void AA_SparseOctree::VisualizeOccupancy()
 	}
 }
 
+/**
+* Purpose: Generate graph which stores spatial data
+* We need a way to represent the unoccupied spatial neighbors of a node
+*/
 void AA_SparseOctree::GenerateGraph()
 {
 	CreateGraphNodes();
 	CreateGraphEdges();
 }
 
+/**
+* Pupose: graph[] just needs to contain the nodes of the octree that are both - leaf nodes & unoccupied
+*/
 void AA_SparseOctree::CreateGraphNodes()
 {
 	for (int i = 0;i < nodeCount;i++)
@@ -132,6 +163,7 @@ void AA_SparseOctree::CreateGraphNodes()
 	}
 }
 
+// Purpose: Find & assign the neigbors of a node
 void AA_SparseOctree::CreateGraphEdges()
 {
 	float distanceThreshold, side_i, side_j, diff_X, diff_Y, diff_Z;
@@ -157,6 +189,7 @@ void AA_SparseOctree::CreateGraphEdges()
 	}
 }
 
+// Purpose: Debug function to visualize the graph & center of the nodes
 void AA_SparseOctree::VisualizeGraph()
 {
 	UWorld* world = GetWorld();
@@ -175,6 +208,7 @@ void AA_SparseOctree::VisualizeGraph()
 	}
 }
 
+// Purpose: Debug function to visualize the neighbors of a particular node
 void AA_SparseOctree::VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node)
 {
 	UWorld* world = GetWorld();
@@ -191,7 +225,12 @@ void AA_SparseOctree::VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node)
 	}
 }
 
-void AA_SparseOctree::VisualizeEdges()
+/**
+* Purpose: Debug function to visualize the vertices of a node
+* This was created when I was considering to use the vertices area method to determine if a point was on the face of the cube which would help in finding the node neighbors
+* The final implementation of node neighbors is not depedant on vertices so this function is not useful anymore
+*/ 
+void AA_SparseOctree::VisualizeVertices()
 {
 	UWorld* world = GetWorld();
 	TArray<FVector> verts;
@@ -207,11 +246,13 @@ void AA_SparseOctree::VisualizeEdges()
 	}
 }
 
+// Purpose: Get the shortest path between 2 nodes
 void AA_SparseOctree::FindPathBetweenNodes(UPARAM(ref) FGraphNode& startNode, UPARAM(ref) FGraphNode& endNode)
 {
 	aStarPath = UAStar::GetPath(graphNodes, startNode, endNode, doesPathExist);
 }
 
+// Purpose: Debug function to visualize the shortest path between 2 nodes
 void AA_SparseOctree::VisualizePath()
 {
 	UWorld* world = GetWorld();

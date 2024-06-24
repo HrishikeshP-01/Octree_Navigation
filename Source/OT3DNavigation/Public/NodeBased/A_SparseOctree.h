@@ -13,6 +13,11 @@
 #include "NavMath/AStar.h"
 #include "A_SparseOctree.generated.h"
 
+/**
+* Description: Class for implementation of sparse octree
+* Purpose: Implementation of sparse-octree & finding the best path between 2 points
+* Improvements: Optimization. We can use sets or dicts instead of arrays & reduce time complexity
+*/
 UCLASS()
 class OT3DNAVIGATION_API AA_SparseOctree : public AActor
 {
@@ -73,7 +78,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void VisualizeOccupancy();
 
-	// Logic for graph
+	// Functions for graph
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph")
 		TArray<FGraphNode> graphNodes;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph")
@@ -87,8 +92,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void VisualizeNeighborNodes(UPARAM(ref) FGraphNode& node);
 	UFUNCTION(BlueprintCallable)
-		void VisualizeEdges();
+		void VisualizeVertices();
 
+	// Functions for pathfinding
 	UFUNCTION(BlueprintCallable)
 		void FindPathBetweenNodes(UPARAM(ref) FGraphNode& start, UPARAM(ref) FGraphNode& end);
 	UFUNCTION(BlueprintCallable)
