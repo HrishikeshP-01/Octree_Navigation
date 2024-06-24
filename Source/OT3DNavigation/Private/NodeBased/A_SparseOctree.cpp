@@ -35,13 +35,8 @@ void AA_SparseOctree::Tick(float DeltaTime)
 * Purpose: Every time the octree is created we need to reset node counts & empty the node arrays 
 * Else data just keeps getting added as we use arr.Add() functions later
 */
-void AA_SparseOctree::SetVariables(int n_1, int m_1, float nodeSize_1, float maxSide_1, float minSide_1)
+void AA_SparseOctree::SetVariables(float maxSide_1, float minSide_1)
 {
-	n = n_1;
-	m = m_1;
-	nodeSize = nodeSize_1;
-
-	levelCount = n - m;
 	maxSide = maxSide_1;
 	minSide = (minSide_1 >= 1) ? minSide_1 : 1.0f;
 	

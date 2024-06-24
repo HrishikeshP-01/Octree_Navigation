@@ -38,14 +38,6 @@ public:
 protected:
 	// Variables for octree:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Parameters")
-		int32 m;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Parameters")
-		int32 n;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Parameters")
-		float nodeSize;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Octree|Parameters")
-		int levelCount;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Parameters")
 		float maxSide;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Octree|Parameters")
 		float minSide = 1.0f;
@@ -74,7 +66,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void VisualizeTree();
 	UFUNCTION(BlueprintCallable)
-		void SetVariables(int n_1, int m_1, float nodeSize_1, float maxSide_1, float minSide_1);
+		void SetVariables(float maxSide_1, float minSide_1);
 	UFUNCTION(BlueprintCallable)
 		void VisualizeOccupancy();
 
